@@ -9,8 +9,6 @@ use hyper::server::{Service, Request, Response};
 
 use regex;
 
-use tlsclient::HttpsConnector;
-
 #[derive(Clone)]
 pub struct Routes {
     pub routes: Vec<(regex::Regex, String)>,
@@ -20,7 +18,6 @@ pub struct Routes {
 pub struct Proxy {
     pub routes: Routes,
     pub client: Client<HttpConnector, Body>,
-    pub tls_client: Client<HttpsConnector, Body>,
 }
 
 impl Service for Proxy {

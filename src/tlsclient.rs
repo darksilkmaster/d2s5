@@ -14,16 +14,6 @@ pub struct HttpsConnector {
     tls_connector: Rc<TlsConnector>,
 }
 
-impl HttpsConnector {
-
-    pub fn new(http: HttpConnector, tls_connector: TlsConnector) -> HttpsConnector {
-        HttpsConnector {
-            http: http,
-            tls_connector: Rc::new(tls_connector),
-        }
-    }
-}
-
 impl Service for HttpsConnector {
     type Request = Url;
     type Response = TlsStream<TcpStream>;
