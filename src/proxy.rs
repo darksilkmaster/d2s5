@@ -42,29 +42,25 @@ impl Service for Proxy {
                 let (ref regex, ref other_site) = self.routes.routes[index];
                 let url = hyper::Url::parse(other_site).expect("configuration problem, other site not valid URL");
 
-                    println!("forward request to {}", url);
-                    let secure = url.scheme() == "https";
-                    let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
-                    *proxied_request.headers_mut() = req.headers().clone();
-                    let req = if secure {
-                        self.tls_client.request(proxied_request)
-                    } else {
-                        self.client.request(proxied_request)
-                    };
-                    Box::new(req.then(|res| {
-                        println!("got response back!");
-                        if let Ok(res) = res {
+                println!("forward request to {}", url);
+                let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
+                *proxied_request.headers_mut() = req.headers().clone();
+                let req =
+                    self.client.request(proxied_request);
+                Box::new(req.then(|res| {
+                    println!("got response back!");
+                    if let Ok(res) = res {
                         futures::future::ok(
                             Response::new()
                                 .with_status(res.status().clone())
                                 .with_headers(res.headers().clone())
                                 .with_body(res.body()))
-                        } else {
-                            futures::future::ok(
-                                Response::new()
-                                    .with_status(StatusCode::ServiceUnavailable))
-                        }
-                    })) as Self::Future
+                    } else {
+                        futures::future::ok(
+                            Response::new()
+                                .with_status(StatusCode::ServiceUnavailable))
+                    }
+                })) as Self::Future
             }
         };
         fut
