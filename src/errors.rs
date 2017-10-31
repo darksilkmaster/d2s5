@@ -5,8 +5,6 @@ error_chain! {
         AddrParse(::std::net::AddrParseError);
         Log(::log::SetLoggerError);
         Http(::hyper::Error);
-        Regex(::regex::Error);
-        Tls(::native_tls::Error);
     }
 
     errors {

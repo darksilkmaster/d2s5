@@ -10,11 +10,7 @@ extern crate toml;
 extern crate error_chain;
 extern crate tokio_core;
 extern crate tokio_signal;
-extern crate tokio_tls;
 extern crate tokio_service;
-extern crate native_tls;
-extern crate chrono;
-extern crate regex;
 
 mod config;
 mod errors;
