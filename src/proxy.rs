@@ -1,6 +1,5 @@
 use futures;
-use futures::{Future, BoxFuture};
-use futures::future::FutureResult;
+use futures::{Future};
 
 use hyper;
 use hyper::{Client, StatusCode, Body};
@@ -31,37 +30,30 @@ impl Service for Proxy {
     type Future = Box<Future<Item=Response, Error=Self::Error>>;
 
     fn call(&self, req: Request) -> Self::Future {
-        let uri = req.uri();
-        let matches = self.routes.regexes.matches(uri.path());
         let fut = {
-            if !matches.matched_any() {
-                futures::future::ok(Response::new().with_status(StatusCode::NotFound)).boxed()
-            } else {
-                // Find the most specific match (unwrap called here because of the above check)
-                let index = matches.iter().next().unwrap();
-                let (ref regex, ref other_site) = self.routes.routes[index];
-                let url = hyper::Url::parse(other_site).expect("configuration problem, other site not valid URL");
+            // Find the most specific match (unwrap called here because of the above check)
+            let other_site = "http://localhost:8000";
+            let url = hyper::Url::parse(other_site).expect("configuration problem, other site not valid URL");
 
-                println!("forward request to {}", url);
-                let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
-                *proxied_request.headers_mut() = req.headers().clone();
-                let req =
-                    self.client.request(proxied_request);
-                Box::new(req.then(|res| {
-                    println!("got response back!");
-                    if let Ok(res) = res {
-                        futures::future::ok(
-                            Response::new()
-                                .with_status(res.status().clone())
-                                .with_headers(res.headers().clone())
-                                .with_body(res.body()))
-                    } else {
-                        futures::future::ok(
-                            Response::new()
-                                .with_status(StatusCode::ServiceUnavailable))
-                    }
-                })) as Self::Future
-            }
+            println!("forward request to {}", url);
+            let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
+            *proxied_request.headers_mut() = req.headers().clone();
+            let req =
+                self.client.request(proxied_request);
+            Box::new(req.then(|res| {
+                println!("got response back!");
+                if let Ok(res) = res {
+                    futures::future::ok(
+                        Response::new()
+                            .with_status(res.status().clone())
+                            .with_headers(res.headers().clone())
+                            .with_body(res.body()))
+                } else {
+                    futures::future::ok(
+                        Response::new()
+                            .with_status(StatusCode::ServiceUnavailable))
+                }
+            })) as Self::Future
         };
         fut
     }
