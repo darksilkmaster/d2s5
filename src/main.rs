@@ -32,7 +32,6 @@ use hyper::server::Http;
 use futures::{Future, Stream};
 
 use tokio_core::reactor::Core;
-use tokio_core::io::Io;
 use tokio_core::net::TcpListener;
 
 use tokio_tls::TlsAcceptorExt;
@@ -81,11 +80,6 @@ fn run() -> errors::Result<()> {
     for (prefix, _) in config.paths.iter() {
         if let Some(ch) = prefix.chars().next() {
             if ch != '/' {
-                bail!(errors::ErrorKind::InvalidRoute(prefix.clone()));
-            }
-        }
-        if let Some(ch) = prefix.chars().rev().next() {
-            if ch == '/' {
                 bail!(errors::ErrorKind::InvalidRoute(prefix.clone()));
             }
         }

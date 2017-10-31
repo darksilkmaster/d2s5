@@ -7,12 +7,10 @@ use hyper::{Client, StatusCode, Body};
 use hyper::client::HttpConnector;
 use hyper::server::{Service, Request, Response};
 
-use chrono::prelude::*;
 
 use regex;
 
 use tlsclient::HttpsConnector;
-use errors;
 
 #[derive(Clone)]
 pub struct Routes {
@@ -43,16 +41,7 @@ impl Service for Proxy {
                 let index = matches.iter().next().unwrap();
                 let (ref regex, ref other_site) = self.routes.routes[index];
                 let url = hyper::Url::parse(other_site).expect("configuration problem, other site not valid URL");
-                if let Some(caps) = regex.captures(uri.path()) {
-                    let site_url = match caps.name("site_url") {
-                        Some(m) => m.as_str(),
-                        None => {
-                            error!("no site_url present");
-                            return futures::future::ok(
-                                Response::new().with_status(StatusCode::InternalServerError)).boxed()
-                        },
-                    };
-                    let url = url.join(site_url).unwrap();
+
                     println!("forward request to {}", url);
                     let secure = url.scheme() == "https";
                     let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
@@ -76,9 +65,6 @@ impl Service for Proxy {
                                     .with_status(StatusCode::ServiceUnavailable))
                         }
                     })) as Self::Future
-                } else {
-                    futures::future::ok(Response::new().with_status(StatusCode::BadGateway)).boxed()
-                }
             }
         };
         fut

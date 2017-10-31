@@ -1,6 +1,5 @@
 [general]
-listen_addr = "0.0.0.0:8000"
+listen_addr = "0.0.0.0:8001"
 
 [paths]
-"/httpbin" = "http://httpbin.org"
-"/site-1" = "http://localhost:8080"
+"/" = "http://localhost:8000"
