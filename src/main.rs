@@ -19,7 +19,6 @@ extern crate regex;
 mod config;
 mod errors;
 mod proxy;
-mod tlsclient;
 
 use std::io;
 use std::io::{Read, Write};
