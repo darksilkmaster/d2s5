@@ -1,7 +1,6 @@
 error_chain! {
     foreign_links {
         Io(::std::io::Error);
-        ConfigParse(::toml::de::Error);
         AddrParse(::std::net::AddrParseError);
         Log(::log::SetLoggerError);
         Http(::hyper::Error);
