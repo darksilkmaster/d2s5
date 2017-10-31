@@ -20,7 +20,7 @@ impl Service for Proxy {
         let fut = {
             // Find the most specific match (unwrap called here because of the above check)
             let other_site = "http://localhost:8000";
-            let url = hyper::Url::parse(other_site).expect("configuration problem, other site not valid URL");
+            let url = other_site.parse().unwrap();
 
             println!("forward request to {}", url);
             let mut proxied_request = hyper::client::Request::new(req.method().clone(), url);
