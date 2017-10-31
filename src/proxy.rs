@@ -6,17 +6,7 @@ use hyper::{Client, StatusCode, Body};
 use hyper::client::HttpConnector;
 use hyper::server::{Service, Request, Response};
 
-
-use regex;
-
-#[derive(Clone)]
-pub struct Routes {
-    pub routes: Vec<(regex::Regex, String)>,
-    pub regexes: regex::RegexSet,
-}
-
 pub struct Proxy {
-    pub routes: Routes,
     pub client: Client<HttpConnector, Body>,
 }
 

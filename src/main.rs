@@ -57,13 +57,6 @@ fn get_config() -> errors::Result<config::Config> {
     Ok(cfg)
 }
 
-fn make_regex_string<S: AsRef<str>>(prefix: S) -> String {
-    let mut pattern = String::from(r"^");
-    pattern.push_str(prefix.as_ref());
-    pattern.push_str(r"((?P<site_url>/(.*))|\z)");
-    pattern
-}
-
 fn run() -> errors::Result<()> {
     let mut core = Core::new()?;
     let handle = core.handle();
@@ -83,17 +76,6 @@ fn run() -> errors::Result<()> {
         }
     }
 
-    // Make a Routes object
-    let routes = proxy::Routes {
-        routes: config.paths.iter().map(|(prefix, addr)| {
-            // Unwrap is used here because the regex compilation process should always work.
-            (regex::Regex::new(&make_regex_string(prefix)).unwrap(), addr.clone())
-        }).collect(),
-        regexes: regex::RegexSet::new(
-            config.paths.iter().map(|(prefix, _)| make_regex_string(prefix)))?,
-    };
-
-
     let addr : SocketAddr = config.general.listen_addr.parse()?;
     let sock = TcpListener::bind(&addr, &handle)?;
     let client = hyper::Client::new(&handle);
@@ -101,7 +83,7 @@ fn run() -> errors::Result<()> {
     println!("Listening on http://{} with 1 thread...", sock.local_addr()?);
 
     let server = sock.incoming().for_each(|(sock, remote_addr)| {
-        let service = proxy::Proxy { routes: routes.clone(), client: client.clone() };
+        let service = proxy::Proxy { client: client.clone() };
         futures::future::ok(remote_addr).and_then(|remote_addr| { http.bind_connection(&handle, sock, remote_addr, service); Ok(()) })
     });
     core.run(server)?;
