@@ -64,18 +64,6 @@ fn run() -> errors::Result<()> {
     env_logger::init()?;
     let config = get_config()?;
 
-    // Verify that the paths are valid
-    for (prefix, _) in config.paths.iter() {
-        if let Some(ch) = prefix.chars().next() {
-            if ch != '/' {
-                bail!(errors::ErrorKind::InvalidRoute(prefix.clone()));
-            }
-        }
-        if prefix.len() == 0 {
-            bail!(errors::ErrorKind::InvalidRoute(prefix.clone()));
-        }
-    }
-
     let addr : SocketAddr = config.general.listen_addr.parse()?;
     let sock = TcpListener::bind(&addr, &handle)?;
     let client = hyper::Client::new(&handle);
